@@ -12,4 +12,4 @@ jest.mock('../src/libs/Notification/PushNotification', () => ({
     deregister: () => {},
 }));
 
-jest.mock('react-native-blob-util');
+jest.mock('react-native-blob-util', () => ({}));
