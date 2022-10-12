@@ -58,7 +58,7 @@ const TestToolMenu = props => (
         {/* Instantly invalidates a user's local authToken. Useful for testing flows related to reauthentication. */}
         <TestToolRow title="Authentication status">
             <Button
-                small
+                
                 text="Invalidate"
                 onPress={() => Session.invalidateAuthToken()}
             />

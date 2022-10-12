@@ -11,10 +11,7 @@ function setIsOffline(isOffline) {
 /**
  * Test tool that will fail all network requests when enabled
  * @param {Boolean} shouldFailAllRequests
- */
-function setShouldFailAllRequests(shouldFailAllRequests) {
-    Onyx.merge(ONYXKEYS.NETWORK, {shouldFailAllRequests});
-}
+*/
 
 export {
     setIsOffline,
