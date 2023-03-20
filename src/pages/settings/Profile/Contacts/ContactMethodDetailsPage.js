@@ -219,18 +219,19 @@ class ContactMethodDetailsPage extends Component {
                             </OfflineWithFeedback>
                         </View>
                     )}
+                    {!isDefaultContactMethod && loginData.validatedDate && (
+                        <MenuItem
+                            title={this.props.translate('contacts.setAsDefault')}
+                            icon={Expensicons.Checkmark}
+                            iconFill={themeColors.midtone}
+                            onPress={() => { }}
+                        />
+                    )}
                     {isDefaultContactMethod ? (
                         <Text style={[styles.ph5]}>
                             {this.props.translate('contacts.yourDefaultContactMethod')}
                         </Text>
                     ) : (
-                        <>
-                        <MenuItem
-                                title={this.props.translate('contacts.setAsDefault')}
-                                icon={Expensicons.Checkmark}
-                                iconFill={themeColors.midtone}
-                                onPress={() => {}}
-                            />
                         <OfflineWithFeedback
                             pendingAction={lodashGet(loginData, 'pendingFields.deletedLogin', null)}
                             errors={ErrorUtils.getLatestErrorField(loginData, 'deletedLogin')}
@@ -244,7 +245,6 @@ class ContactMethodDetailsPage extends Component {
                                 onPress={() => this.toggleDeleteModal(true)}
                             />
                         </OfflineWithFeedback>
-                        </>
                     )}
                 </ScrollView>
             </ScreenWrapper>
