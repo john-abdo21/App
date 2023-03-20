@@ -220,12 +220,19 @@ class ContactMethodDetailsPage extends Component {
                         </View>
                     )}
                     {!isDefaultContactMethod && loginData.validatedDate && (
-                        <MenuItem
-                            title={this.props.translate('contacts.setAsDefault')}
-                            icon={Expensicons.Checkmark}
-                            iconFill={themeColors.midtone}
-                            onPress={() => { }}
-                        />
+                        <OfflineWithFeedback
+                            pendingAction={lodashGet(loginData, 'pendingFields.defaultLogin', null)}
+                            errors={ErrorUtils.getLatestErrorField(loginData, 'defaultLogin')}
+                            errorRowStyles={[styles.mt6]}
+                            onClose={() => User.clearContactMethodErrors(contactMethod, 'defaultLogin')}
+                        >
+                            <MenuItem
+                                title={this.props.translate('contacts.setAsDefault')}
+                                icon={Expensicons.Checkmark}
+                                iconFill={themeColors.midtone}
+                                onPress={() => { }}
+                            />
+                        </OfflineWithFeedback>
                     )}
                     {isDefaultContactMethod ? (
                         <Text style={[styles.ph5]}>
