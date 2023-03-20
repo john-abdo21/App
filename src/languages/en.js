@@ -360,6 +360,7 @@ export default {
             addContactMethod: 'Failed to add this contact method. Please reach out to Concierge for help.'
         },
         newContactMethod: 'New contact method',
+        setAsDefault: 'Set as default',
     },
     pronouns: {
         coCos: 'Co / Cos',

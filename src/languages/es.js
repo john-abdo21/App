@@ -360,6 +360,7 @@ export default {
             addContactMethod: 'No se ha podido añadir el método de contacto. Ponte en contacto con Conserjería para obtener ayuda.',
         },
         newContactMethod: 'Nuevo método de contacto',
+        setAsDefault: 'Establecer como predeterminado',
     },
     pronouns: {
         coCos: 'Co / Cos',
