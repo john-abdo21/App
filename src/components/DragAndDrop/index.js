@@ -26,7 +26,7 @@ const propTypes = {
     shouldAcceptDrop: PropTypes.func,
 
     /** Whether drag & drop should be disabled */
-    disabled: PropTypes.bool,
+    isDisabled: PropTypes.bool,
 
     /** Rendered child component */
     children: PropTypes.node.isRequired,
@@ -44,12 +44,12 @@ const defaultProps = {
         }
         return false;
     },
-    disabled: false,
+    isDisabled: false,
 };
 
-function DragAndDrop({onDragOver, onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, shouldAcceptDrop, disabled, isFocused, children}) {
+function DragAndDrop({onDragOver, onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, shouldAcceptDrop, isDisabled, isFocused, children}) {
     const prevIsFocused = usePrevious(isFocused);
-    const prevIsDisabled = usePrevious(disabled);
+    const prevIsDisabled = usePrevious(isDisabled);
     const dropZone = useRef(null);
     const dropZoneRect = useRef(null);
     /*
@@ -173,7 +173,7 @@ function DragAndDrop({onDragOver, onDragEnter, onDragLeave, onDrop, dropZoneId, 
     }, [dropZoneDragListener, throttledDragNDropWindowResizeListener]);
 
     useEffect(() => {
-        if (disabled) {
+        if (isDisabled) {
             return;
         }
         addEventListeners();
@@ -183,15 +183,15 @@ function DragAndDrop({onDragOver, onDragEnter, onDragLeave, onDrop, dropZoneId, 
     }, []);
 
     useEffect(() => {
-        if (isFocused === prevIsFocused && disabled === prevIsDisabled) {
+        if (isFocused === prevIsFocused && isDisabled === prevIsDisabled) {
             return;
         }
-        if (!isFocused || disabled) {
+        if (!isFocused || isDisabled) {
             removeEventListeners();
         } else {
             addEventListeners();
         }
-    }, [disabled, isFocused, prevIsDisabled, prevIsFocused, addEventListeners, removeEventListeners]);
+    }, [isDisabled, isFocused, prevIsDisabled, prevIsFocused, addEventListeners, removeEventListeners]);
 
     return children;
 }
