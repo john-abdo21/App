@@ -11,10 +11,10 @@ export default {
     onDrop: PropTypes.func.isRequired,
 
     /** Id of the element on which we want to detect drag */
-    dropZoneId: PropTypes.string.isRequired,
+    dropZoneID: PropTypes.string.isRequired,
 
     /** Id of the element which is shown while drag is active */
-    activeDropZoneId: PropTypes.string.isRequired,
+    activeDropZoneID: PropTypes.string.isRequired,
 
     /** Whether drag & drop should be disabled */
     isDisabled: PropTypes.bool,

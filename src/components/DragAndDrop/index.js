@@ -22,7 +22,7 @@ function shouldAcceptDrop(event) {
     return _.some(event.dataTransfer.types, (type) => type === 'Files');
 }
 
-function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, children, isDisabled = false}) {
+function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneID, activeDropZoneID, children, isDisabled = false}) {
     const isFocused = useIsFocused();
     const prevIsFocused = usePrevious(isFocused);
     const prevIsDisabled = usePrevious(isDisabled);
@@ -31,8 +31,8 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZo
     const dropZoneRect = useRef(null);
 
     useEffect(() => {
-        dropZone.current = document.getElementById(dropZoneId);
-    }, [dropZoneId]);
+        dropZone.current = document.getElementById(dropZoneID);
+    }, [dropZoneID]);
     useEffectOnPageLoad(
         () =>
             _.throttle(() => {
@@ -77,7 +77,7 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZo
                             event.clientX <= dropZoneRect.current.left ||
                             event.clientX >= dropZoneRect.current.right ||
                             // Cancel drag when file manager is on top of the drop zone area - works only on chromium
-                            (event.target.getAttribute('id') === activeDropZoneId && !event.relatedTarget)
+                            (event.target.getAttribute('id') === activeDropZoneID && !event.relatedTarget)
                         ) {
                             dropZoneDragState.current = DRAG_LEAVE_EVENT;
                             onDragLeave(event);
@@ -92,7 +92,7 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZo
                     break;
             }
         },
-        [onDragEnter, onDragLeave, activeDropZoneId, onDrop],
+        [onDragEnter, onDragLeave, activeDropZoneID, onDrop],
     );
 
     /**
