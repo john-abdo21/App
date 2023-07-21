@@ -14,10 +14,6 @@ const DRAG_LEAVE_EVENT = 'dragleave';
 const DROP_EVENT = 'drop';
 const RESIZE_EVENT = 'resize';
 
-const defaultProps = {
-    isDisabled: false,
-};
-
 /**
  * @param {Event} event – drag event
  * @returns {Boolean}
@@ -26,7 +22,7 @@ function shouldAcceptDrop(event) {
     return _.some(event.dataTransfer.types, (type) => type === 'Files');
 }
 
-function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, isDisabled, children}) {
+function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, children, isDisabled = false}) {
     const isFocused = useIsFocused();
     const prevIsFocused = usePrevious(isFocused);
     const prevIsDisabled = usePrevious(isDisabled);
@@ -159,6 +155,5 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZo
 }
 
 DragAndDrop.propTypes = DragAndDropPropTypes;
-DragAndDrop.defaultProps = defaultProps;
 
 export default DragAndDrop;
