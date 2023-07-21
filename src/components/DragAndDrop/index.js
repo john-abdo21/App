@@ -1,5 +1,4 @@
 import {useCallback, useEffect, useRef} from 'react';
-import PropTypes from 'prop-types';
 import _ from 'underscore';
 
 import variables from '../../styles/variables';
@@ -14,19 +13,6 @@ const DRAG_ENTER_EVENT = 'dragenter';
 const DRAG_LEAVE_EVENT = 'dragleave';
 const DROP_EVENT = 'drop';
 const RESIZE_EVENT = 'resize';
-
-const propTypes = {
-    ...DragAndDropPropTypes,
-
-    /** Guard for accepting drops in drop zone. Drag event is passed to this function as first parameter. This prop is necessary to be inlined to satisfy the linter */
-    shouldAcceptDrop: PropTypes.func,
-
-    /** Whether drag & drop should be disabled */
-    isDisabled: PropTypes.bool,
-
-    /** Rendered child component */
-    children: PropTypes.node.isRequired,
-};
 
 const defaultProps = {
     shouldAcceptDrop: (e) => {
@@ -173,7 +159,7 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZo
     return children;
 }
 
-DragAndDrop.propTypes = propTypes;
+DragAndDrop.propTypes = DragAndDropPropTypes;
 DragAndDrop.defaultProps = defaultProps;
 
 export default withNavigationFocus(DragAndDrop);
