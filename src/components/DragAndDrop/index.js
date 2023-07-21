@@ -27,11 +27,6 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneID, activeDropZo
 
     const dropZone = useRef(null);
     const dropZoneRect = useRef(null);
-    /*
-     * Last detected drag state on the dropzone -> we start with dragleave since user is not dragging initially.
-     * This state is updated when drop zone is left/entered entirely(not taking the children in the account) or entire window is left
-     */
-    const dropZoneDragState = useRef(DRAG_LEAVE_EVENT);
 
     useEffect(() => {
         dropZone.current = document.getElementById(dropZoneID);
@@ -51,6 +46,20 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneID, activeDropZo
             }, 100),
         [windowWidth, isSmallScreenWidth],
     );
+
+    /*
+     * Last detected drag state on the dropzone -> we start with dragleave since user is not dragging initially.
+     * This state is updated when drop zone is left/entered entirely(not taking the children in the account) or entire window is left
+     */
+    const dropZoneDragState = useRef(DRAG_LEAVE_EVENT);
+
+    // If this component is out of focus or disabled, reset the drag state back to the default
+    useEffect(() => {
+        if (isFocused && !isDisabled) {
+            return;
+        }
+        dropZoneDragState.current = DRAG_LEAVE_EVENT;
+    }, [isFocused, isDisabled]);
 
     /**
      * Handles all types of drag-N-drop events on the drop zone associated with composer
