@@ -3,7 +3,6 @@ import _ from 'underscore';
 import {useIsFocused} from '@react-navigation/native';
 
 import DragAndDropPropTypes from './dragAndDropPropTypes';
-import usePrevious from '../../hooks/usePrevious';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 import useEffectOnPageLoad from '../../hooks/useEffectOnPageLoad';
 
@@ -24,15 +23,20 @@ function shouldAcceptDrop(event) {
 
 function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneID, activeDropZoneID, children, isDisabled = false}) {
     const isFocused = useIsFocused();
-    const prevIsFocused = usePrevious(isFocused);
-    const prevIsDisabled = usePrevious(isDisabled);
     const {windowWidth, isSmallScreenWidth} = useWindowDimensions();
+
     const dropZone = useRef(null);
     const dropZoneRect = useRef(null);
+    /*
+     * Last detected drag state on the dropzone -> we start with dragleave since user is not dragging initially.
+     * This state is updated when drop zone is left/entered entirely(not taking the children in the account) or entire window is left
+     */
+    const dropZoneDragState = useRef(DRAG_LEAVE_EVENT);
 
     useEffect(() => {
         dropZone.current = document.getElementById(dropZoneID);
     }, [dropZoneID]);
+
     useEffectOnPageLoad(
         () =>
             _.throttle(() => {
@@ -48,17 +52,15 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneID, activeDropZo
         [windowWidth, isSmallScreenWidth],
     );
 
-    /*
-        Last detected drag state on the dropzone -> we start with dragleave since user is not dragging initially.
-        This state is updated when drop zone is left/entered entirely(not taking the children in the account) or entire window is left
-    */
-    const dropZoneDragState = useRef(DRAG_LEAVE_EVENT);
-
     /**
      * @param {Object} event native Event
      */
     const dropZoneDragHandler = useCallback(
         (event) => {
+            if (!isFocused || isDisabled) {
+                return;
+            }
+
             switch (event.type) {
                 case DRAG_ENTER_EVENT:
                     // Avoid reporting onDragEnter for children views -> not performant
@@ -92,7 +94,7 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneID, activeDropZo
                     break;
             }
         },
-        [onDragEnter, onDragLeave, activeDropZoneID, onDrop],
+        [isFocused, isDisabled, onDragEnter, onDragLeave, activeDropZoneID, onDrop],
     );
 
     /**
@@ -114,38 +116,17 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneID, activeDropZo
         [dropZoneDragHandler],
     );
 
-    const addEventListeners = useCallback(() => {
+    useEffect(() => {
         document.addEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
         document.addEventListener(DRAG_LEAVE_EVENT, dropZoneDragListener);
         document.addEventListener(DROP_EVENT, dropZoneDragListener);
+        return () => {
+            document.removeEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
+            document.removeEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
+            document.removeEventListener(DRAG_LEAVE_EVENT, dropZoneDragListener);
+            document.removeEventListener(DROP_EVENT, dropZoneDragListener);
+        };
     }, [dropZoneDragListener]);
-
-    const removeEventListeners = useCallback(() => {
-        document.removeEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
-        document.removeEventListener(DRAG_LEAVE_EVENT, dropZoneDragListener);
-        document.removeEventListener(DROP_EVENT, dropZoneDragListener);
-    }, [dropZoneDragListener]);
-
-    useEffect(() => {
-        if (isDisabled) {
-            return;
-        }
-        addEventListeners();
-
-        return removeEventListeners;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
-        if (isFocused === prevIsFocused && isDisabled === prevIsDisabled) {
-            return;
-        }
-        if (!isFocused || isDisabled) {
-            removeEventListeners();
-        } else {
-            addEventListeners();
-        }
-    }, [isDisabled, isFocused, prevIsDisabled, prevIsFocused, addEventListeners, removeEventListeners]);
 
     return children;
 }

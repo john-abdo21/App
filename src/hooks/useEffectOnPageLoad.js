@@ -16,9 +16,8 @@ export default function useEffectOnPageLoad(onPageLoad, dependencies = []) {
         if (document.readyState === 'complete') {
             onPageLoadCallback();
         } else {
-            window.removeEventListener('load', onPageLoadRef.current);
-            window.addEventListener('load', onPageLoadRef.current);
-            return () => window.removeEventListener('load', onPageLoadRef.current);
+            window.addEventListener('load', onPageLoadCallback);
+            return () => window.removeEventListener('load', onPageLoadCallback);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, dependencies);
