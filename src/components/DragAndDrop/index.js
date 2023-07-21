@@ -47,9 +47,9 @@ const defaultProps = {
     disabled: false,
 };
 
-function DragAndDrop(props) {
-    const prevIsFocused = usePrevious(props.isFocused);
-    const prevIsDisabled = usePrevious(props.disabled);
+function DragAndDrop({onDragOver, onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, shouldAcceptDrop, disabled, isFocused, children}) {
+    const prevIsFocused = usePrevious(isFocused);
+    const prevIsDisabled = usePrevious(disabled);
     const dropZone = useRef(null);
     const dropZoneRect = useRef(null);
     /*
@@ -62,7 +62,7 @@ function DragAndDrop(props) {
      * @param {Object} event native Event
      */
     const dragOverHandler = (event) => {
-        props.onDragOver(event);
+        onDragOver(event);
     };
 
     const throttledDragOverHandler = _.throttle(dragOverHandler, 100);
@@ -106,7 +106,7 @@ function DragAndDrop(props) {
                         dropZoneDragState.current = DRAG_ENTER_EVENT;
                         // eslint-disable-next-line no-param-reassign
                         event.dataTransfer.dropEffect = COPY_DROP_EFFECT;
-                        props.onDragEnter(event);
+                        onDragEnter(event);
                     }
                     break;
                 case DRAG_LEAVE_EVENT:
@@ -117,22 +117,22 @@ function DragAndDrop(props) {
                             event.clientX <= dropZoneRect.current.left ||
                             event.clientX >= dropZoneRect.current.right ||
                             // Cancel drag when file manager is on top of the drop zone area - works only on chromium
-                            (event.target.getAttribute('id') === props.activeDropZoneId && !event.relatedTarget)
+                            (event.target.getAttribute('id') === activeDropZoneId && !event.relatedTarget)
                         ) {
                             dropZoneDragState.current = DRAG_LEAVE_EVENT;
-                            props.onDragLeave(event);
+                            onDragLeave(event);
                         }
                     }
                     break;
                 case DROP_EVENT:
                     dropZoneDragState.current = DRAG_LEAVE_EVENT;
-                    props.onDrop(event);
+                    onDrop(event);
                     break;
                 default:
                     break;
             }
         },
-        [props, throttledDragOverHandler],
+        [onDragEnter, onDragLeave, activeDropZoneId, onDrop, throttledDragOverHandler],
     );
 
     /**
@@ -144,25 +144,25 @@ function DragAndDrop(props) {
         (event) => {
             event.preventDefault();
 
-            if (dropZone.current.contains(event.target) && props.shouldAcceptDrop(event)) {
+            if (dropZone.current.contains(event.target) && shouldAcceptDrop(event)) {
                 dropZoneDragHandler(event);
             } else {
                 // eslint-disable-next-line no-param-reassign
                 event.dataTransfer.dropEffect = NONE_DROP_EFFECT;
             }
         },
-        [props, dropZoneDragHandler],
+        [shouldAcceptDrop, dropZoneDragHandler],
     );
 
     const addEventListeners = useCallback(() => {
-        dropZone.current = document.getElementById(props.dropZoneId);
+        dropZone.current = document.getElementById(dropZoneId);
         dropZoneRect.current = calculateDropZoneClientReact();
         document.addEventListener(DRAG_OVER_EVENT, dropZoneDragListener);
         document.addEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
         document.addEventListener(DRAG_LEAVE_EVENT, dropZoneDragListener);
         document.addEventListener(DROP_EVENT, dropZoneDragListener);
         window.addEventListener(RESIZE_EVENT, throttledDragNDropWindowResizeListener);
-    }, [props.dropZoneId, calculateDropZoneClientReact, dropZoneDragListener, throttledDragNDropWindowResizeListener]);
+    }, [dropZoneId, calculateDropZoneClientReact, dropZoneDragListener, throttledDragNDropWindowResizeListener]);
 
     const removeEventListeners = useCallback(() => {
         document.removeEventListener(DRAG_OVER_EVENT, dropZoneDragListener);
@@ -173,7 +173,7 @@ function DragAndDrop(props) {
     }, [dropZoneDragListener, throttledDragNDropWindowResizeListener]);
 
     useEffect(() => {
-        if (props.disabled) {
+        if (disabled) {
             return;
         }
         addEventListeners();
@@ -183,17 +183,17 @@ function DragAndDrop(props) {
     }, []);
 
     useEffect(() => {
-        if (props.isFocused === prevIsFocused && props.disabled === prevIsDisabled) {
+        if (isFocused === prevIsFocused && disabled === prevIsDisabled) {
             return;
         }
-        if (!props.isFocused || props.disabled) {
+        if (!isFocused || disabled) {
             removeEventListeners();
         } else {
             addEventListeners();
         }
-    }, [props.disabled, props.isFocused, prevIsDisabled, prevIsFocused, addEventListeners, removeEventListeners]);
+    }, [disabled, isFocused, prevIsDisabled, prevIsFocused, addEventListeners, removeEventListeners]);
 
-    return props.children;
+    return children;
 }
 
 DragAndDrop.propTypes = propTypes;
