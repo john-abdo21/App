@@ -2,9 +2,10 @@ import {useCallback, useEffect, useRef} from 'react';
 import _ from 'underscore';
 import {useIsFocused} from '@react-navigation/native';
 
-import variables from '../../styles/variables';
 import DragAndDropPropTypes from './dragAndDropPropTypes';
 import usePrevious from '../../hooks/usePrevious';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
+import useEffectOnPageLoad from '../../hooks/useEffectOnPageLoad';
 
 const COPY_DROP_EFFECT = 'copy';
 const NONE_DROP_EFFECT = 'none';
@@ -12,7 +13,6 @@ const NONE_DROP_EFFECT = 'none';
 const DRAG_ENTER_EVENT = 'dragenter';
 const DRAG_LEAVE_EVENT = 'dragleave';
 const DROP_EVENT = 'drop';
-const RESIZE_EVENT = 'resize';
 
 /**
  * @param {Event} event – drag event
@@ -26,33 +26,33 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZo
     const isFocused = useIsFocused();
     const prevIsFocused = usePrevious(isFocused);
     const prevIsDisabled = usePrevious(isDisabled);
+    const {windowWidth, isSmallScreenWidth} = useWindowDimensions();
     const dropZone = useRef(null);
     const dropZoneRect = useRef(null);
+
+    useEffect(() => {
+        dropZone.current = document.getElementById(dropZoneId);
+    }, [dropZoneId]);
+    useEffectOnPageLoad(
+        () =>
+            _.throttle(() => {
+                const boundingClientRect = dropZone.current.getBoundingClientRect();
+                dropZoneRect.current = {
+                    width: boundingClientRect.width,
+                    left: isSmallScreenWidth ? 0 : boundingClientRect.left,
+                    right: isSmallScreenWidth ? windowWidth : boundingClientRect.right,
+                    top: boundingClientRect.top,
+                    bottom: boundingClientRect.bottom,
+                };
+            }, 100),
+        [windowWidth, isSmallScreenWidth],
+    );
+
     /*
         Last detected drag state on the dropzone -> we start with dragleave since user is not dragging initially.
         This state is updated when drop zone is left/entered entirely(not taking the children in the account) or entire window is left
     */
     const dropZoneDragState = useRef(DRAG_LEAVE_EVENT);
-
-    const calculateDropZoneClientReact = useCallback(() => {
-        const boundingClientRect = dropZone.current.getBoundingClientRect();
-
-        // Handle edge case when we are under responsive breakpoint the browser doesn't normalize rect.left to 0 and rect.right to window.innerWidth
-        return {
-            width: boundingClientRect.width,
-            left: window.innerWidth <= variables.mobileResponsiveWidthBreakpoint ? 0 : boundingClientRect.left,
-            right: window.innerWidth <= variables.mobileResponsiveWidthBreakpoint ? window.innerWidth : boundingClientRect.right,
-            top: boundingClientRect.top,
-            bottom: boundingClientRect.bottom,
-        };
-    }, []);
-
-    const dragNDropWindowResizeListener = () => {
-        // Update bounding client rect on window resize
-        dropZoneRect.current = calculateDropZoneClientReact();
-    };
-
-    const throttledDragNDropWindowResizeListener = _.throttle(dragNDropWindowResizeListener, 100);
 
     /**
      * @param {Object} event native Event
@@ -115,20 +115,16 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZo
     );
 
     const addEventListeners = useCallback(() => {
-        dropZone.current = document.getElementById(dropZoneId);
-        dropZoneRect.current = calculateDropZoneClientReact();
         document.addEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
         document.addEventListener(DRAG_LEAVE_EVENT, dropZoneDragListener);
         document.addEventListener(DROP_EVENT, dropZoneDragListener);
-        window.addEventListener(RESIZE_EVENT, throttledDragNDropWindowResizeListener);
-    }, [dropZoneId, calculateDropZoneClientReact, dropZoneDragListener, throttledDragNDropWindowResizeListener]);
+    }, [dropZoneDragListener]);
 
     const removeEventListeners = useCallback(() => {
         document.removeEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
         document.removeEventListener(DRAG_LEAVE_EVENT, dropZoneDragListener);
         document.removeEventListener(DROP_EVENT, dropZoneDragListener);
-        window.removeEventListener(RESIZE_EVENT, throttledDragNDropWindowResizeListener);
-    }, [dropZoneDragListener, throttledDragNDropWindowResizeListener]);
+    }, [dropZoneDragListener]);
 
     useEffect(() => {
         if (isDisabled) {
