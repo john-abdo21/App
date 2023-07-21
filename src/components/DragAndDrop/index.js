@@ -1,9 +1,9 @@
 import {useCallback, useEffect, useRef} from 'react';
 import _ from 'underscore';
+import {useIsFocused} from '@react-navigation/native';
 
 import variables from '../../styles/variables';
 import DragAndDropPropTypes from './dragAndDropPropTypes';
-import withNavigationFocus from '../withNavigationFocus';
 import usePrevious from '../../hooks/usePrevious';
 
 const COPY_DROP_EFFECT = 'copy';
@@ -28,7 +28,8 @@ const defaultProps = {
     isDisabled: false,
 };
 
-function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, shouldAcceptDrop, isDisabled, isFocused, children}) {
+function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, shouldAcceptDrop, isDisabled, children}) {
+    const isFocused = useIsFocused();
     const prevIsFocused = usePrevious(isFocused);
     const prevIsDisabled = usePrevious(isDisabled);
     const dropZone = useRef(null);
@@ -162,4 +163,4 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZo
 DragAndDrop.propTypes = DragAndDropPropTypes;
 DragAndDrop.defaultProps = defaultProps;
 
-export default withNavigationFocus(DragAndDrop);
+export default DragAndDrop;
