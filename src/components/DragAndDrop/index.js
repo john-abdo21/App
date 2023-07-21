@@ -53,6 +53,8 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneID, activeDropZo
     );
 
     /**
+     * Handles all types of drag-N-drop events on the drop zone associated with composer
+     *
      * @param {Object} event native Event
      */
     const dropZoneDragHandler = useCallback(
@@ -61,72 +63,60 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneID, activeDropZo
                 return;
             }
 
-            switch (event.type) {
-                case DRAG_ENTER_EVENT:
-                    // Avoid reporting onDragEnter for children views -> not performant
-                    if (dropZoneDragState.current === DRAG_LEAVE_EVENT) {
-                        dropZoneDragState.current = DRAG_ENTER_EVENT;
-                        // eslint-disable-next-line no-param-reassign
-                        event.dataTransfer.dropEffect = COPY_DROP_EFFECT;
-                        onDragEnter(event);
-                    }
-                    break;
-                case DRAG_LEAVE_EVENT:
-                    if (dropZoneDragState.current === DRAG_ENTER_EVENT) {
-                        if (
-                            event.clientY <= dropZoneRect.current.top ||
-                            event.clientY >= dropZoneRect.current.bottom ||
-                            event.clientX <= dropZoneRect.current.left ||
-                            event.clientX >= dropZoneRect.current.right ||
-                            // Cancel drag when file manager is on top of the drop zone area - works only on chromium
-                            (event.target.getAttribute('id') === activeDropZoneID && !event.relatedTarget)
-                        ) {
-                            dropZoneDragState.current = DRAG_LEAVE_EVENT;
-                            onDragLeave(event);
-                        }
-                    }
-                    break;
-                case DROP_EVENT:
-                    dropZoneDragState.current = DRAG_LEAVE_EVENT;
-                    onDrop(event);
-                    break;
-                default:
-                    break;
-            }
-        },
-        [isFocused, isDisabled, onDragEnter, onDragLeave, activeDropZoneID, onDrop],
-    );
-
-    /**
-     * Handles all types of drag-N-drop events on the drop zone associated with composer
-     *
-     * @param {Object} event native Event
-     */
-    const dropZoneDragListener = useCallback(
-        (event) => {
             event.preventDefault();
 
             if (dropZone.current.contains(event.target) && shouldAcceptDrop(event)) {
-                dropZoneDragHandler(event);
+                switch (event.type) {
+                    case DRAG_ENTER_EVENT:
+                        // Avoid reporting onDragEnter for children views -> not performant
+                        if (dropZoneDragState.current === DRAG_LEAVE_EVENT) {
+                            dropZoneDragState.current = DRAG_ENTER_EVENT;
+                            // eslint-disable-next-line no-param-reassign
+                            event.dataTransfer.dropEffect = COPY_DROP_EFFECT;
+                            onDragEnter(event);
+                        }
+                        break;
+                    case DRAG_LEAVE_EVENT:
+                        if (dropZoneDragState.current === DRAG_ENTER_EVENT) {
+                            if (
+                                event.clientY <= dropZoneRect.current.top ||
+                                event.clientY >= dropZoneRect.current.bottom ||
+                                event.clientX <= dropZoneRect.current.left ||
+                                event.clientX >= dropZoneRect.current.right ||
+                                // Cancel drag when file manager is on top of the drop zone area - works only on chromium
+                                (event.target.getAttribute('id') === activeDropZoneID && !event.relatedTarget)
+                            ) {
+                                dropZoneDragState.current = DRAG_LEAVE_EVENT;
+                                onDragLeave(event);
+                            }
+                        }
+                        break;
+                    case DROP_EVENT:
+                        dropZoneDragState.current = DRAG_LEAVE_EVENT;
+                        onDrop(event);
+                        break;
+                    default:
+                        break;
+                }
             } else {
                 // eslint-disable-next-line no-param-reassign
                 event.dataTransfer.dropEffect = NONE_DROP_EFFECT;
             }
         },
-        [dropZoneDragHandler],
+        [isFocused, isDisabled, onDragEnter, onDragLeave, activeDropZoneID, onDrop],
     );
 
     useEffect(() => {
-        document.addEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
-        document.addEventListener(DRAG_LEAVE_EVENT, dropZoneDragListener);
-        document.addEventListener(DROP_EVENT, dropZoneDragListener);
+        document.addEventListener(DRAG_ENTER_EVENT, dropZoneDragHandler);
+        document.addEventListener(DRAG_LEAVE_EVENT, dropZoneDragHandler);
+        document.addEventListener(DROP_EVENT, dropZoneDragHandler);
         return () => {
-            document.removeEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
-            document.removeEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
-            document.removeEventListener(DRAG_LEAVE_EVENT, dropZoneDragListener);
-            document.removeEventListener(DROP_EVENT, dropZoneDragListener);
+            document.removeEventListener(DRAG_ENTER_EVENT, dropZoneDragHandler);
+            document.removeEventListener(DRAG_ENTER_EVENT, dropZoneDragHandler);
+            document.removeEventListener(DRAG_LEAVE_EVENT, dropZoneDragHandler);
+            document.removeEventListener(DROP_EVENT, dropZoneDragHandler);
         };
-    }, [dropZoneDragListener]);
+    }, [dropZoneDragHandler]);
 
     return children;
 }
