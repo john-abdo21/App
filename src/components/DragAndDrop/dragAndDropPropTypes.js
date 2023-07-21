@@ -16,9 +16,6 @@ export default {
     /** Id of the element which is shown while drag is active */
     activeDropZoneId: PropTypes.string.isRequired,
 
-    /** Guard for accepting drops in drop zone. Drag event is passed to this function as first parameter. */
-    shouldAcceptDrop: PropTypes.func,
-
     /** Whether drag & drop should be disabled */
     isDisabled: PropTypes.bool,
 

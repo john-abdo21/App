@@ -15,20 +15,18 @@ const DROP_EVENT = 'drop';
 const RESIZE_EVENT = 'resize';
 
 const defaultProps = {
-    shouldAcceptDrop: (e) => {
-        if (e.dataTransfer.types) {
-            for (let i = 0; i < e.dataTransfer.types.length; i++) {
-                if (e.dataTransfer.types[i] === 'Files') {
-                    return true;
-                }
-            }
-        }
-        return false;
-    },
     isDisabled: false,
 };
 
-function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, shouldAcceptDrop, isDisabled, children}) {
+/**
+ * @param {Event} event – drag event
+ * @returns {Boolean}
+ */
+function shouldAcceptDrop(event) {
+    return _.some(event.dataTransfer.types, (type) => type === 'Files');
+}
+
+function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, isDisabled, children}) {
     const isFocused = useIsFocused();
     const prevIsFocused = usePrevious(isFocused);
     const prevIsDisabled = usePrevious(isDisabled);
@@ -117,7 +115,7 @@ function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZo
                 event.dataTransfer.dropEffect = NONE_DROP_EFFECT;
             }
         },
-        [shouldAcceptDrop, dropZoneDragHandler],
+        [dropZoneDragHandler],
     );
 
     const addEventListeners = useCallback(() => {
