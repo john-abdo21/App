@@ -1,9 +1,6 @@
 import PropTypes from 'prop-types';
 
 export default {
-    /** Callback to fire when a file has being dragged over the text input & report body */
-    onDragOver: PropTypes.func,
-
     /** Callback to fire when a file has been dragged into the text input & report body */
     onDragEnter: PropTypes.func.isRequired,
 

@@ -10,7 +10,6 @@ import usePrevious from '../../hooks/usePrevious';
 const COPY_DROP_EFFECT = 'copy';
 const NONE_DROP_EFFECT = 'none';
 
-const DRAG_OVER_EVENT = 'dragover';
 const DRAG_ENTER_EVENT = 'dragenter';
 const DRAG_LEAVE_EVENT = 'dragleave';
 const DROP_EVENT = 'drop';
@@ -18,9 +17,6 @@ const RESIZE_EVENT = 'resize';
 
 const propTypes = {
     ...DragAndDropPropTypes,
-
-    /** Callback to fire when a file has being dragged over the text input & report body. This prop is necessary to be inlined to satisfy the linter */
-    onDragOver: DragAndDropPropTypes.onDragOver,
 
     /** Guard for accepting drops in drop zone. Drag event is passed to this function as first parameter. This prop is necessary to be inlined to satisfy the linter */
     shouldAcceptDrop: PropTypes.func,
@@ -33,7 +29,6 @@ const propTypes = {
 };
 
 const defaultProps = {
-    onDragOver: () => {},
     shouldAcceptDrop: (e) => {
         if (e.dataTransfer.types) {
             for (let i = 0; i < e.dataTransfer.types.length; i++) {
@@ -47,7 +42,7 @@ const defaultProps = {
     isDisabled: false,
 };
 
-function DragAndDrop({onDragOver, onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, shouldAcceptDrop, isDisabled, isFocused, children}) {
+function DragAndDrop({onDragEnter, onDragLeave, onDrop, dropZoneId, activeDropZoneId, shouldAcceptDrop, isDisabled, isFocused, children}) {
     const prevIsFocused = usePrevious(isFocused);
     const prevIsDisabled = usePrevious(isDisabled);
     const dropZone = useRef(null);
@@ -57,15 +52,6 @@ function DragAndDrop({onDragOver, onDragEnter, onDragLeave, onDrop, dropZoneId, 
         This state is updated when drop zone is left/entered entirely(not taking the children in the account) or entire window is left
     */
     const dropZoneDragState = useRef(DRAG_LEAVE_EVENT);
-
-    /**
-     * @param {Object} event native Event
-     */
-    const dragOverHandler = (event) => {
-        onDragOver(event);
-    };
-
-    const throttledDragOverHandler = _.throttle(dragOverHandler, 100);
 
     const calculateDropZoneClientReact = useCallback(() => {
         const boundingClientRect = dropZone.current.getBoundingClientRect();
@@ -92,14 +78,7 @@ function DragAndDrop({onDragOver, onDragEnter, onDragLeave, onDrop, dropZoneId, 
      */
     const dropZoneDragHandler = useCallback(
         (event) => {
-            // Setting dropEffect for dragover is required for '+' icon on certain platforms/browsers (eg. Safari)
             switch (event.type) {
-                case DRAG_OVER_EVENT:
-                    // Continuous event -> can hurt performance, be careful when subscribing
-                    // eslint-disable-next-line no-param-reassign
-                    event.dataTransfer.dropEffect = COPY_DROP_EFFECT;
-                    throttledDragOverHandler(event);
-                    break;
                 case DRAG_ENTER_EVENT:
                     // Avoid reporting onDragEnter for children views -> not performant
                     if (dropZoneDragState.current === DRAG_LEAVE_EVENT) {
@@ -132,7 +111,7 @@ function DragAndDrop({onDragOver, onDragEnter, onDragLeave, onDrop, dropZoneId, 
                     break;
             }
         },
-        [onDragEnter, onDragLeave, activeDropZoneId, onDrop, throttledDragOverHandler],
+        [onDragEnter, onDragLeave, activeDropZoneId, onDrop],
     );
 
     /**
@@ -157,7 +136,6 @@ function DragAndDrop({onDragOver, onDragEnter, onDragLeave, onDrop, dropZoneId, 
     const addEventListeners = useCallback(() => {
         dropZone.current = document.getElementById(dropZoneId);
         dropZoneRect.current = calculateDropZoneClientReact();
-        document.addEventListener(DRAG_OVER_EVENT, dropZoneDragListener);
         document.addEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
         document.addEventListener(DRAG_LEAVE_EVENT, dropZoneDragListener);
         document.addEventListener(DROP_EVENT, dropZoneDragListener);
@@ -165,7 +143,6 @@ function DragAndDrop({onDragOver, onDragEnter, onDragLeave, onDrop, dropZoneId, 
     }, [dropZoneId, calculateDropZoneClientReact, dropZoneDragListener, throttledDragNDropWindowResizeListener]);
 
     const removeEventListeners = useCallback(() => {
-        document.removeEventListener(DRAG_OVER_EVENT, dropZoneDragListener);
         document.removeEventListener(DRAG_ENTER_EVENT, dropZoneDragListener);
         document.removeEventListener(DRAG_LEAVE_EVENT, dropZoneDragListener);
         document.removeEventListener(DROP_EVENT, dropZoneDragListener);
